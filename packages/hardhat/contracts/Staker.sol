@@ -1,31 +1,65 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.4;  //Do not change the solidity version as it negativly impacts submission grading
+pragma solidity 0.8.4; //Do not change the solidity version as it negativly impacts submission grading
 
 import "hardhat/console.sol";
 import "./ExampleExternalContract.sol";
 
 contract Staker {
+	event Stake();
 
-  ExampleExternalContract public exampleExternalContract;
+	ExampleExternalContract public exampleExternalContract;
 
-  constructor(address exampleExternalContractAddress) {
-      exampleExternalContract = ExampleExternalContract(exampleExternalContractAddress);
-  }
+	mapping(address => uint256) addressToValue;
 
-  // Collect funds in a payable `stake()` function and track individual `balances` with a mapping:
-  // (Make sure to add a `Stake(address,uint256)` event and emit it for the frontend `All Stakings` tab to display)
+	uint256 constant deadline = 1 days;
+	uint256 immutable i_startTime;
+	uint256 constant threshold = 1 ether;
 
+	constructor(address exampleExternalContractAddress) {
+		exampleExternalContract = ExampleExternalContract(
+			exampleExternalContractAddress
+		);
+		i_startTime = block.timestamp;
+	}
 
-  // After some `deadline` allow anyone to call an `execute()` function
-  // If the deadline has passed and the threshold is met, it should call `exampleExternalContract.complete{value: address(this).balance}()`
+	// Collect funds in a payable `stake()` function and track individual `balances` with a mapping:
+	// (Make sure to add a `Stake(address,uint256)` event and emit it for the frontend `All Stakings` tab to display)
 
+	function stake() public payable {
+		addressToValue[msg.sender] += msg.value;
 
-  // If the `threshold` was not met, allow everyone to call a `withdraw()` function to withdraw their balance
+		emit Stake();
+	}
 
+	// After some `deadline` allow anyone to call an `execute()` function
+	// If the deadline has passed and the threshold is met, it should call `exampleExternalContract.complete{value: address(this).balance}()`
 
-  // Add a `timeLeft()` view function that returns the time left before the deadline for the frontend
+	function execute() public {
+		require(
+			block.timestamp - deadline > i_startTime,
+			"Not enough time passed"
+		);
+		require(address(this).balance >= threshold, "Threshold not met");
 
+		exampleExternalContract.complete{ value: address(this).balance }();
+	}
 
-  // Add the `receive()` special function that receives eth and calls stake()
+	// If the `threshold` was not met, allow everyone to call a `withdraw()` function to withdraw their balance
+	function withdraw() public {
+		require(address(this).balance < threshold, "Threshold was met");
+		uint256 valueToWithdraw = addressToValue[msg.sender];
 
+		addressToValue[msg.sender] = 0;
+		payable(msg.sender).transfer(valueToWithdraw);
+	}
+
+	// Add a `timeLeft()` view function that returns the time left before the deadline for the frontend
+	function timeLeft() public view returns (uint256) {
+		return i_startTime + deadline - block.timestamp;
+	}
+
+	// Add the `receive()` special function that receives eth and calls stake()
+	receive() external payable {
+		stake();
+	}
 }
