@@ -27,7 +27,6 @@ contract Staker {
 
 	function stake() public payable {
 		addressToValue[msg.sender] += msg.value;
-
 		emit Stake();
 	}
 
@@ -48,7 +47,6 @@ contract Staker {
 	function withdraw() public {
 		require(address(this).balance < threshold, "Threshold was met");
 		uint256 valueToWithdraw = addressToValue[msg.sender];
-
 		addressToValue[msg.sender] = 0;
 		payable(msg.sender).transfer(valueToWithdraw);
 	}
