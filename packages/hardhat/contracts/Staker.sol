@@ -7,8 +7,6 @@ import "./ExampleExternalContract.sol";
 contract Staker {
 	event Stake(address, uint256);
 
-	error DidNotReachThreshold();
-
 	ExampleExternalContract public exampleExternalContract;
 
 	mapping(address => uint256) addressToValue;
@@ -41,10 +39,10 @@ contract Staker {
 			block.timestamp - deadline > i_startTime,
 			"Not enough time passed"
 		);
+
 		if (address(this).balance >= threshold) {
 			exampleExternalContract.complete{ value: address(this).balance }();
 		} else {
-			emit DidNotReachThreshold();
 			openForWithdraw = true;
 		}
 	}
