@@ -11,7 +11,7 @@ contract Staker {
 
 	mapping(address => uint256) addressToValue;
 
-	uint256 constant deadline = 30 seconds;
+	uint256 constant deadline = 72 hours;
 	uint256 constant threshold = 1 ether;
 	uint256 immutable i_startTime;
 	bool openForWithdraw = false;
