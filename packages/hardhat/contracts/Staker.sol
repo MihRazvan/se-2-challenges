@@ -26,6 +26,11 @@ contract Staker {
 	// Collect funds in a payable `stake()` function and track individual `balances` with a mapping:
 	// (Make sure to add a `Stake(address,uint256)` event and emit it for the frontend `All Stakings` tab to display)
 
+	modifier isCompleted() {
+		require(exampleExternalContractAddress.completed);
+		_;
+	}
+
 	function stake() public payable {
 		addressToValue[msg.sender] += msg.value;
 		emit Stake(msg.sender, msg.value);
@@ -34,7 +39,7 @@ contract Staker {
 	// After some `deadline` allow anyone to call an `execute()` function
 	// If the deadline has passed and the threshold is met, it should call `exampleExternalContract.complete{value: address(this).balance}()`
 
-	function execute() public {
+	function execute() public isCompleted {
 		require(
 			block.timestamp - deadline > i_startTime,
 			"Not enough time passed"
@@ -48,7 +53,7 @@ contract Staker {
 	}
 
 	// If the `threshold` was not met, allow everyone to call a `withdraw()` function to withdraw their balance
-	function withdraw() public {
+	function withdraw() public isCompleted {
 		require(openForWithdraw, "Cannot Withdraw");
 		uint256 valueToWithdraw = addressToValue[msg.sender];
 		addressToValue[msg.sender] = 0;
