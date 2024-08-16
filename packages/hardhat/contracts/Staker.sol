@@ -11,9 +11,10 @@ contract Staker {
 
 	mapping(address => uint256) addressToValue;
 
-	uint256 constant deadline = 1 days;
+	uint256 constant deadline = 30 seconds;
 	uint256 constant threshold = 1 ether;
 	uint256 immutable i_startTime;
+	bool openForWithdraw = false;
 
 	constructor(address exampleExternalContractAddress) {
 		exampleExternalContract = ExampleExternalContract(
@@ -38,14 +39,16 @@ contract Staker {
 			block.timestamp - deadline > i_startTime,
 			"Not enough time passed"
 		);
-		require(address(this).balance >= threshold, "Threshold not met");
-
-		exampleExternalContract.complete{ value: address(this).balance }();
+		if (address(this).balance >= threshold) {
+			openForWithdraw = true;
+		} else {
+			exampleExternalContract.complete{ value: address(this).balance }();
+		}
 	}
 
 	// If the `threshold` was not met, allow everyone to call a `withdraw()` function to withdraw their balance
 	function withdraw() public {
-		require(address(this).balance < threshold, "Threshold was met");
+		require(openForWithdraw, "Threshold was met");
 		uint256 valueToWithdraw = addressToValue[msg.sender];
 		addressToValue[msg.sender] = 0;
 		payable(msg.sender).transfer(valueToWithdraw);
