@@ -40,9 +40,9 @@ contract Staker {
 			"Not enough time passed"
 		);
 		if (address(this).balance >= threshold) {
-			openForWithdraw = true;
-		} else {
 			exampleExternalContract.complete{ value: address(this).balance }();
+		} else {
+			openForWithdraw = true;
 		}
 	}
 
