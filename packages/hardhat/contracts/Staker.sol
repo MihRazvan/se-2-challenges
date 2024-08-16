@@ -7,6 +7,8 @@ import "./ExampleExternalContract.sol";
 contract Staker {
 	event Stake(address, uint256);
 
+	error DidNotReachThreshold();
+
 	ExampleExternalContract public exampleExternalContract;
 
 	mapping(address => uint256) addressToValue;
@@ -42,13 +44,14 @@ contract Staker {
 		if (address(this).balance >= threshold) {
 			exampleExternalContract.complete{ value: address(this).balance }();
 		} else {
+			emit DidNotReachThreshold();
 			openForWithdraw = true;
 		}
 	}
 
 	// If the `threshold` was not met, allow everyone to call a `withdraw()` function to withdraw their balance
 	function withdraw() public {
-		require(openForWithdraw, "Threshold was met");
+		require(openForWithdraw, "Cannot Withdraw");
 		uint256 valueToWithdraw = addressToValue[msg.sender];
 		addressToValue[msg.sender] = 0;
 		payable(msg.sender).transfer(valueToWithdraw);
