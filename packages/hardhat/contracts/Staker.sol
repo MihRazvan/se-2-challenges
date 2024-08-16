@@ -5,15 +5,15 @@ import "hardhat/console.sol";
 import "./ExampleExternalContract.sol";
 
 contract Staker {
-	event Stake();
+	event Stake(address, uint256);
 
 	ExampleExternalContract public exampleExternalContract;
 
 	mapping(address => uint256) addressToValue;
 
 	uint256 constant deadline = 1 days;
-	uint256 immutable i_startTime;
 	uint256 constant threshold = 1 ether;
+	uint256 immutable i_startTime;
 
 	constructor(address exampleExternalContractAddress) {
 		exampleExternalContract = ExampleExternalContract(
@@ -27,7 +27,7 @@ contract Staker {
 
 	function stake() public payable {
 		addressToValue[msg.sender] += msg.value;
-		emit Stake();
+		emit Stake(msg.sender, msg.value);
 	}
 
 	// After some `deadline` allow anyone to call an `execute()` function
