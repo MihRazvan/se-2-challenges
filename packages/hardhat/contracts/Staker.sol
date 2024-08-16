@@ -27,11 +27,11 @@ contract Staker {
 	// (Make sure to add a `Stake(address,uint256)` event and emit it for the frontend `All Stakings` tab to display)
 
 	modifier isCompleted() {
-		require(exampleExternalContractAddress.completed);
+		require(!exampleExternalContract.completed());
 		_;
 	}
 
-	function stake() public payable {
+	function stake() public payable isCompleted {
 		addressToValue[msg.sender] += msg.value;
 		emit Stake(msg.sender, msg.value);
 	}
@@ -39,7 +39,7 @@ contract Staker {
 	// After some `deadline` allow anyone to call an `execute()` function
 	// If the deadline has passed and the threshold is met, it should call `exampleExternalContract.complete{value: address(this).balance}()`
 
-	function execute() public isCompleted {
+	function execute() public {
 		require(
 			block.timestamp - deadline > i_startTime,
 			"Not enough time passed"
