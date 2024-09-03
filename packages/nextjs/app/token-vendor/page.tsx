@@ -88,6 +88,7 @@ const TokenVendor: NextPage = () => {
         <button
           className="btn btn-secondary mt-2"
           onClick={async () => {
+
             try {
               await writeVendorAsync({ functionName: "buyTokens", value: getTokenPrice(tokensToBuy, tokensPerEth) });
             } catch (err) {
